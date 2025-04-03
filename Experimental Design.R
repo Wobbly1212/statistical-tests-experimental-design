@@ -243,4 +243,42 @@ remove_outliers_z(x,1)
 boxplot(x)
 remove_outliers_iqr(x)
 
+########################################################################
+# One sample t-test - One-tailed hypothesis tests
+########################################################################
+
+?t.test
+
+t.test(x, mu = 0, alternative = "greater")
+t.test(x, mu = 0, alternative = "greater",  conf.level = 0.90) # set a different 1????? level
+
+
+# One sample t-test - Using a Two-tailed hypothesis tests
+t.test(x, mu = 0, alternative = "two.sided")
+t.test(x, mu = 0, alternative = "two.sided", conf.level = 0.90) # set a different 1????? level
+
+
+# Real Example
+
+cats_sample_weight=rnorm(49, mean=4, sd=5)
+hist(cats_sample_weight)
+
+# we can check the outliers before to do the test
+boxplot(cats_sample_weight)
+
+sd(cats_sample_weight)
+mean(cats_sample_weight)
+t=(mean(cats_sample_weight)-7)/(sd(cats_sample_weight)/7)
+
+t.test(cats_sample_weight, mu = 7, alternative = "two.sided")
+
+# if we know sd pop - for example is equal to sd sample
+library(DescTools)
+?ZTest
+
+sd_pop=sd(cats_sample_weight)
+ZTest(cats_sample_weight, mu=7, sd_pop=sd_pop)
+
+
+
 
