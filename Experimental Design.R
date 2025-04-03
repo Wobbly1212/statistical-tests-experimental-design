@@ -140,3 +140,107 @@ sf.test(x)
 library(nortest)
 pearson.test(x) # Pearson chi-square normality test
 
+
+#############################################################################
+# assumption 2: The dependent variable should not contain any outliers #####
+#############################################################################
+
+# How to check for outliers
+
+boxplot(x)
+outliers_values=boxplot.stats(x)$out
+outliers_values
+
+
+# IQR to Detect Outliers
+
+summary(x)
+summary(x)[5]
+summary(x)[2]
+IQR=summary(x)[5]-summary(x)[2]
+IQR # Interquartile range
+
+up_out=summary(x)[5]+1.5*IQR
+down_out=summary(x)[2]-1.5*IQR
+
+up_out
+down_out
+
+max(x)
+min(x)
+
+which(x>up_out)
+which(x<down_out)
+
+out_data=c(which(x<down_out), which(x>up_out))
+out_data
+
+length(x)
+x[out_data]
+
+x_new=x[-out_data]
+length(x_new)
+
+boxplot(x_new)
+outliers_values_new=boxplot.stats(x_new)$out
+outliers_values_new
+
+# Using Z-scores to Detect Outliers
+
+z=(x-mean(x))/sd(x)
+summary(z)
+boxplot(z)
+
+which(z > 2.5)
+which(z < -2.5)
+
+out_data_z=c(which(z > 2.5), which(z < -2.5))
+out_data_z
+
+x_new2=x[-out_data_z]
+length(x_new2)
+
+
+# create a function to find and remove outliers automatically using z score
+
+remove_outliers_z=function(x, value=2.5){
+  z=(x-mean(x))/sd(x)
+  out_data_z=c(which(z > value), which(z < -value))
+  x_new=x[-out_data_z]
+  print(length(x_new))
+  boxplot(x_new)
+  summary(x_new)
+  par(mfrow=c(1,2))
+  boxplot(x_new, main="New Distribution BoxPlot")
+  hist(x_new, main="New Distribution Histogram")
+}
+
+remove_outliers_iqr=function(x){
+  IQR=summary(x)[5]-summary(x)[2]
+  up_out=summary(x)[5]+1.5*IQR
+  down_out=summary(x)[2]-1.5*IQR
+  out_data=c(which(x<down_out), which(x>up_out))
+  x_new=x[-out_data]
+  print(length(x_new))
+  boxplot(x_new)
+  summary(x_new)}
+
+?runif
+?rbeta
+
+# x=runif(300, min=0, max=100)
+# x=sample(1:10000, 1000, replace=T)
+
+x=rbeta(1000, 3, 0.6)
+
+hist(x)
+boxplot(x)
+
+remove_outliers_z(x)
+remove_outliers_z(x,3)
+remove_outliers_z(x,1)
+
+boxplot(x)
+remove_outliers_iqr(x)
+
+
