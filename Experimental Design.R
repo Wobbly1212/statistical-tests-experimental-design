@@ -326,5 +326,32 @@ source('http://www.sthda.com/upload/rquery_t_test.r')
 rquery.t.test(x1, x2)
 
 
+###################################################################################
+## Assumption n. 1 violated - The samples (or one) are not normally distributed ###
+###################################################################################
+###################################################################################
+## Unpaired two samples t test when the normality is not present ##################
+###################################################################################
+
+#############################################################################
+############# Solution n.1 if normality is not present ######################
+#############################################################################
+## Try to transform the data to make them normal and respect assumption 1 ###
+#############################################################################
+
+
+# use log to transform but pay attention to zeros
+# The natural log function is frequently used to rescale data for statistical
+# and graphical analysis. This can be accomplished in R via the use of the 
+# log() function which can be mapped across a vector or data frame. 
+# The resulting series of values will be transformed, reducing the
+# visual distance between observations that are orders of magnitude
+# apart (eg. 10, 100, 1000 would be adjacent to each other visually).
+# Rescaling data through a natural log transformation reduces the 
+# impact a few excessively large data points have when calculating 
+# a trend-line through the sample.
+
+
+
 
 
