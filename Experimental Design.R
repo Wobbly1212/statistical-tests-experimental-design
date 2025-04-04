@@ -280,5 +280,51 @@ sd_pop=sd(cats_sample_weight)
 ZTest(cats_sample_weight, mu=7, sd_pop=sd_pop)
 
 
+#############################################################################
+## unpaired two samples t test with similar variance (homoscedastic case) ###
+#############################################################################
+
+# create two random groups
+x1<-rnorm(1000, mean=3, sd=0.98)
+x2<-rnorm(1000, mean=4, sd=1)
+
+boxplot(x1, main="First group")
+boxplot(x2, main="Second group")
+
+# assumption 1: the data are normally distributed
+shapiro.test(x1)
+shapiro.test(x2)
+
+# assumption 2: samples have "equal" variances
+# rough check: in general, the ratio between the SDs must not be greater than 2
+sd(x1)
+sd(x2)
+sd(x2)/sd(x1)  
+
+# testing the homogeneity of variances
+# low P-values rejection H0, high P-values I accept homogeneity variances
+# need of dataframe
+
+values=c(x1,x2)
+length(values)
+group_label=c(rep("A",length(values)/2),rep("B",length(values)/2))
+group_label=as.factor(group_label)
+class(group_label)
+
+data=cbind(values, group_label)
+head(data)
+tail(data)
+
+bartlett.test(values, group_label)
+fligner.test(values, group_label)
+
+# the null is that the means are equal
+t.test(x1, x2, alternative = "two.sided", var.equal = TRUE)
+
+# nice function: get the function "rquery.t.test" 
+source('http://www.sthda.com/upload/rquery_t_test.r')
+rquery.t.test(x1, x2)
+
+
 
 
