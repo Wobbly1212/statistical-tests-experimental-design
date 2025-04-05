@@ -429,5 +429,28 @@ t.test(x3, x4, alternative = "two.sided", var.equal = FALSE)
 # rquery.t.test automatically performs the Welch Two Sample t-test
 rquery.t.test(x3, x4)
 
+##############################################################################
+################# Paired two samples t test ##################################
+##############################################################################
+
+# two dependent samples
+
+# assumption: the difference d=x-y is normally distributed
+
+t1<-rnorm(100, mean=10, sd=2)
+t2<-rnorm(100, mean=15, sd=3)
+
+differences=t1-t2
+hist(differences)
+shapiro.test(differences)
+
+boxplot(t1)
+boxplot(t2)
+
+t.test(t1, t2, paired=TRUE, alternative = "two.sided")
+
+# rquery.t.test automatically check normality of differences
+rquery.t.test(t1, t2, paired=TRUE)
+
 
 
