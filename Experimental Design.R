@@ -352,6 +352,82 @@ rquery.t.test(x1, x2)
 # a trend-line through the sample.
 
 
+v = c(100,10,5,2,1,0.5,0.1,0.05,0.01,0.001,0.0001)
+hist(v)
+hist(log(v))
+shapiro.test(v)
+shapiro.test(log(v))
+
+
+# Box-Cox transformation
+
+library(caret)
+?cars
+head(cars)
+cars
+hist(datasets::cars$dist)
+shapiro.test(datasets::cars$dist)
+
+distBCMod <- caret::BoxCoxTrans(cars$dist)   # try to make dist normal
+print(distBCMod)
+dist_new=predict(distBCMod, cars$dist)   # transform the distance using lambda
+hist(dist_new)
+shapiro.test(dist_new)
+
+# if you make the same transformation to both groups, now you can use t-test
+
+
+#############################################################################
+############# Solution n.2 if normality is not present ######################
+#############################################################################
+############# Use a non-parametric test, i.e. wilcox.test ###################
+#############################################################################
+
+x5<-rnorm(100, mean=2, sd=0.9)
+x5<-c(x, 10,20) # add some outliers
+hist(x5)
+boxplot(x5)
+shapiro.test(x5)
+
+x6<-rnorm(100, mean=4, sd=1)
+boxplot(x6)
+shapiro.test(x6)
+
+wilcox.test(x5,x6)
+
+# rquery.t.test automatically performs the wilcox.test when normality is not met
+source('http://www.sthda.com/upload/rquery_t_test.r')
+rquery.t.test(x5, x6)
+
+
+###################################################################################
+## Assumption n. 2 violated - The samples have differerent variance ###############
+###################################################################################
+## Unpaired two samples t test with dissimilar variances (heteroscedastic case) ###
+###################################################################################
+# The two samples are normally distributed but the variances are unequal #########
+###################################################################################
+
+x3<-rnorm(100, mean=2, sd=0.9)
+x4<-rnorm(100, mean=2, sd=3)
+
+values2=c(x3,x4)
+length(values2)
+group_label2=c(rep("C",length(values2)/2),rep("D",length(values2)/2))
+group_label2=as.factor(group_label2)
+class(group_label2)
+
+data2=cbind(values2, group_label2)
+head(data2)
+tail(data2)
+
+bartlett.test(values2, group_label2)
+fligner.test(values2, group_label2)
+
+t.test(x3, x4, alternative = "two.sided", var.equal = FALSE)
+
+# rquery.t.test automatically performs the Welch Two Sample t-test
+rquery.t.test(x3, x4)
 
 
 
