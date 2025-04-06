@@ -451,6 +451,36 @@ t.test(t1, t2, paired=TRUE, alternative = "two.sided")
 
 # rquery.t.test automatically check normality of differences
 rquery.t.test(t1, t2, paired=TRUE)
+# real example
+
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+
+data("mice2", package = "datarium")
+head(mice2, 3)
+?mice2 # contains the weight of 10 mice before and after the treatment.
+
+# Transform into long data: 
+# gather the before and after values in the same column
+# mice2.long <- mice2 %>%
+#   gather(key = "group", value = "weight", before, after)
+# head(mice2.long, 10)
+# ?tidyr::gather
+
+par(mfrow=c(1,2))
+boxplot(mice2$before, main="Before", ylim=c(0,500))
+boxplot(mice2$after, main="After", ylim=c(0,500))
+
+mice2$after-mice2$before
+
+hist(mice2$after-mice2$before) # it may appear not normal
+hist(mice2$after-mice2$before,10)
+shapiro.test(mice2$after-mice2$before)
+
+res <- t.test(mice2$after,mice2$before, paired = TRUE)
+res
+
 
 
 
