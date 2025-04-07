@@ -1,4 +1,4 @@
-######################################################################################
+ì######################################################################################
 ################ Comparing the means of two groups (or only one) #####################
 #####################################################################################
 
@@ -587,6 +587,140 @@ plot(pd, type = "profile") + theme_bw()
 
 res <- wilcox.test(before, after, paired = TRUE)
 res   # median weight of the mice before treatment is significantly different from the median weight after treatment
+
+
+#####################################################################################
+################### Comparing the means of more than two groups #####################
+#####################################################################################
+
+###########################################################################
+############ Parametric tests for many groups #############################
+###########################################################################
+
+##################################
+######## ANOVA BETWEEN ###########
+##################################
+
+####################################################
+############# One-way ANOVA ########################
+####################################################
+
+# http://www.sthda.com/english/wiki/one-way-anova-test-in-r
+
+# Results from an experiment to compare yields (amount produced) 
+# (as measured by dried weight of plants) obtained 
+# under a control and two different treatment conditions.
+
+# We want to know if there is any significant difference between 
+# the average weights of plants in the 3 experimental conditions.
+
+?PlantGrowth
+
+dim(PlantGrowth)
+head(PlantGrowth)
+levels(PlantGrowth$group)    # factor with three treatments
+
+library(ggpubr)
+?ggboxplot
+ggboxplot(PlantGrowth, x = "group", y = "weight", 
+          fill="group", order = c("ctrl", "trt1", "trt2"),
+          ylab = "Weight", xlab = "Treatment")
+
+# plot the distribution of the groups and check normality 
+
+par(mfrow=c(2,2))
+
+hist(PlantGrowth$weight[PlantGrowth$group=="ctrl"], col="blue", 
+     border="black", prob = TRUE, xlab = "Weight", main = "Control", breaks=6)
+lines(density(PlantGrowth$weight[PlantGrowth$group=="ctrl"]), lwd = 2, col = "red")
+
+hist(PlantGrowth$weight[PlantGrowth$group=="trt1"],col="blue", 
+     border="black", prob = TRUE, xlab = "Weight", main = "Treatment 1", breaks=6)
+lines(density(PlantGrowth$weight[PlantGrowth$group=="trt1"]), lwd = 2, col = "red")
+
+hist(PlantGrowth$weight[PlantGrowth$group=="trt2"], col="blue",
+     border="black", prob = TRUE, xlab = "Weight", main = "Treatment 2", breaks=6)
+lines(density(PlantGrowth$weight[PlantGrowth$group=="trt2"]), lwd = 2, col = "red")
+
+library(ggplot2)
+library(lattice)
+
+?densityplot
+densityplot(~ PlantGrowth$weight, group = group, data = PlantGrowth, auto.key = TRUE)
+# auto.key automatically insert the legend
+ggplot(PlantGrowth) + geom_density(aes(x = PlantGrowth$weight, fill = group), alpha = 0.2)
+
+shapiro.test(PlantGrowth$weight[PlantGrowth$group=="ctrl"])
+shapiro.test(PlantGrowth$weight[PlantGrowth$group=="trt1"])
+shapiro.test(PlantGrowth$weight[PlantGrowth$group=="trt2"])
+
+# check homogeneity of variances
+
+bartlett.test(PlantGrowth$weight, PlantGrowth$group)
+fligner.test(PlantGrowth$weight, PlantGrowth$group)
+
+# Compute the analysis of variance
+mod <- aov(weight ~ group, data = PlantGrowth)
+# dim(PlantGrowth)
+
+# Summary of the analysis
+summary(mod)
+
+# There are significant differences between the groups highlighted with "*"
+
+# Multiple pairwise-comparison between the means of groups
+# In one-way ANOVA test, a significant p-value indicates that some of the group means are different, but we don't know which pairs of groups are different.
+# It's possible to perform multiple pairwise-comparison, to determine if the mean difference between specific pairs of group are statistically significant.
+
+# Tukey multiple pairwise-comparisons
+
+TUKEY=TukeyHSD(mod)
+TUKEY
+
+library(multcompView)
+plot(TUKEY , las=1 , col="brown")
+
+# diff: difference between means of the two groups
+# lwr, upr: the lower and the upper end point of the confidence
+# interval at 95% (default)
+# p adj: p-value after adjustment for the multiple comparisons.
+# It can be seen from the output, that only the difference between
+# trt2 and trt1 is significant with an adjusted p-value of 0.012.
+
+# alternative (adjusted by the Benjamini-Hochberg method)
+?pairwise.t.test
+pairwise.t.test(PlantGrowth$weight, PlantGrowth$group,
+                p.adjust.method = "BH")
+
+
+# Alternative to Check the homogeneity of variance assumption
+
+plot(mod, 1)
+# Points 17, 15, 4 are detected as outliers, which can severely 
+# affect normality and homogeneity of variance. It can be useful to remove 
+# outliers to meet the test assumptions.
+
+# alternative to Check the homogeneity of variance assumption
+library(car)
+leveneTest(weight ~ group, data = PlantGrowth)
+# there is no evidence to suggest that the variance across groups is
+# statistically significantly different
+
+
+
+# Alternative to  Check the normality assumption
+
+# The normal probability plot of residuals is used to check 
+# the assumption that the residuals are normally distributed. 
+# It should approximately follow a straight line.
+
+plot(mod, 2)
+
+# alternative to Check the normality assumption
+# Extract the residuals
+aov_residuals <- residuals(object = mod )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
 
 
 
