@@ -542,6 +542,53 @@ ggboxplot(my_data, x = "group", y = "weight",
 res <- wilcox.test(women_weight, men_weight)
 res
 
+##################################################
+### Wilcoxon matched-pairs signed rank test  #####
+##################################################
+
+# dependent groups
+
+# Differences between paired samples should be distributed symmetrically 
+# around the median.
+
+# Weight of the mice before treatment
+before <-c(200.1, 190.9, 192.7, 213, 241.4, 196.9, 172.2, 185.5, 205.2, 193.7)
+
+# Weight of the mice after treatment
+after <-c(392.9, 393.2, 345.1, 393, 434, 427.9, 422, 383.9, 392.3, 352.2)
+
+my_data <- data.frame( 
+  group = rep(c("before", "after"), each = 10),
+  weight = c(before,  after)
+)
+
+my_data
+
+# We want to know, if there is any significant difference in the median 
+# weights before and after treatment?
+
+library("ggpubr")
+ggboxplot(my_data, x = "group", y = "weight", 
+          color = "group", palette = c("#00AFBB", "#E7B800"),
+          order = c("before", "after"),
+          ylab = "Weight", xlab = "Groups")
+
+# Subset weight data before treatment
+before <- subset(my_data,  group == "before", weight,
+                 drop = TRUE)
+# subset weight data after treatment
+after <- subset(my_data,  group == "after", weight,
+                drop = TRUE)
+
+# Plot paired data
+library(PairedData)
+pd <- paired(before, after)
+plot(pd, type = "profile") + theme_bw()
+
+res <- wilcox.test(before, after, paired = TRUE)
+res   # median weight of the mice before treatment is significantly different from the median weight after treatment
+
+
 
 
 
