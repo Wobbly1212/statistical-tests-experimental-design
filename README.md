@@ -126,10 +126,3 @@ Special thanks to the R and data science community for open resources and powerf
 ## 📘 License
 
 MIT License. You are free to use, share, and modify.
-
----
-
-Let me know if you'd like:
-- A cleaned version of your `.R` file split into logical modules
-- A Quarto or RMarkdown version for publishing as a notebook or blog
-- GitHub Pages to display this project as a web guide
