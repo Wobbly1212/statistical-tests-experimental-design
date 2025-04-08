@@ -788,3 +788,76 @@ TUKEY
 library(multcompView)
 plot(TUKEY , las=1 , col="brown")
 
+####################################################################
+################## ANOVA BETWEEN EXERCISE ##########################
+####################################################################
+
+# Time: Survival time of the animal
+# poison: Type of poison used: factor level: 1,2 and 3
+# treat: Type of treatment used: factor level: 1,2 and 3
+
+library(BHH2)
+data(poison.data)
+?poison.data
+
+dd=poison.data
+
+dim(dd)
+head(dd)
+attach(dd)
+
+levels(treat)
+levels(poison)
+
+e <- ggplot(dd, aes(x = treat, y = y))
+e + geom_boxplot(aes(fill = poison)) +
+  ggtitle("Survival time of the animal according to poison and tratment") +
+  xlab("poison and tratment Combinations") + ylab(" Survival time ")
+
+table(poison, treat)
+
+shapiro.test(dd$y[dd$poison=="I" & dd$treat=="A"])
+shapiro.test(dd$y[dd$poison=="I" & dd$treat=="B"])
+shapiro.test(dd$y[dd$poison=="I" & dd$treat=="C"])
+shapiro.test(dd$y[dd$poison=="I" & dd$treat=="D"])
+# skip other normality assumptions check
+
+# not the right way
+bartlett.test(dd$y, dd$poison) # only for a factor
+bartlett.test(dd$y, dd$treat) # only for a factor
+
+# extend to all the cells, we have 12 cells because the levels combinations are 4*3
+combo=rep(1:12, each=4)
+combo
+
+dd2=cbind(dd, combo)
+
+attach(dd2)
+dd2
+dd2$combo=as.factor(dd2$combo)
+levels(dd2$combo)
+
+bartlett.test(dd2$y, dd2$combo) # no homoscedasticity, a non-parametric test is more appropriate
+
+# come back to the previous dataset, dd2 was just for chechink
+
+mod_ex <- aov(y ~ treat*poison, data = dd)
+summary(mod_ex)
+
+TUKEY1=TukeyHSD(mod_ex, which = "poison")
+TUKEY2=TukeyHSD(mod_ex, which = "treat")
+TUKEY1
+TUKEY2
+
+library(multcompView)
+plot(TUKEY1, las=1 , col="brown")
+plot(TUKEY2, las=1 , col="brown")
+
+# all contrasts
+mod_ex2 <- aov(y ~ combo, data = dd2)
+summary(mod_ex2)
+TUKEY3=TukeyHSD(mod_ex2)
+TUKEY3
+plot(TUKEY3)
+
+
