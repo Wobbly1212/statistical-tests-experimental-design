@@ -722,8 +722,69 @@ aov_residuals <- residuals(object = mod )
 # Run Shapiro-Wilk test
 shapiro.test(x = aov_residuals )
 
+####################################################
+############# Two-way ANOVA ########################
+####################################################
+
+# http://www.sthda.com/english/wiki/two-way-anova-test-in-r
+
+set.seed(1234)
+
+?ToothGrowth
+
+data(ToothGrowth)
+ToothGrowth$dose=as.factor(ToothGrowth$dose)
+ToothGrowth$supp=as.factor(ToothGrowth$supp)
+
+# Convert dose as a factor and recode the levels
+# as "D0.5", "D1", "D2"
+ToothGrowth$dose <- factor(ToothGrowth$dose, 
+                       levels = c(0.5, 1, 2),
+                       labels = c("D0.5", "D1", "D2"))
+
+# We want to know if tooth length depends on supp and dose.
+
+table(ToothGrowth$supp, ToothGrowth$dose)
+
+# We have 2X3 design cells with the factors being supp and dose and 10 subjects in each cell. Here, we have a balanced design. 
+
+library("ggpubr")
+ggboxplot(ToothGrowth, x = "dose", y = "len", color = "supp",
+          palette = c("#00AFBB", "#E7B800"))
+
+ggline(ToothGrowth, x = "dose", y = "len", color = "supp",
+       add = c("mean_se", "dotplot"),
+       palette = c("#00AFBB", "#E7B800"))
 
 
+# Box plot with two factor variables
+boxplot(len ~ supp * dose, data=ToothGrowth, frame = FALSE, 
+        col = c("#00AFBB", "#E7B800"), ylab="Tooth Length")
+
+# Two-way interaction plot
+?interaction.plot
+interaction.plot(x.factor = ToothGrowth$dose, trace.factor = ToothGrowth$supp, 
+                 response = ToothGrowth$len, fun = mean, 
+                 type = "b", legend = TRUE, 
+                 xlab = "Dose", ylab="Tooth Length",
+                 pch=c(1,19), col = c("#00AFBB", "#E7B800"))
+
+# x.factor: the factor to be plotted on x axis.
+# trace.factor: the factor to be plotted as lines
+# response: a numeric variable giving the response
+# type: the type of plot. Allowed values include p (for point only), l (for line only) and b (for both point and line).
+
+mod2 <- aov(len ~ supp + dose, data = ToothGrowth)
+summary(mod2)
 
 
+# Two-way ANOVA with interaction effect
+mod3 <- aov(len ~ supp * dose, data = ToothGrowth)
+summary(mod3)
+
+TUKEY=TukeyHSD(mod3, which = "dose")
+TUKEY
+
+library(multcompView)
+plot(TUKEY , las=1 , col="brown")
 
