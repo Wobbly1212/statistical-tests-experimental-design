@@ -859,5 +859,79 @@ summary(mod_ex2)
 TUKEY3=TukeyHSD(mod_ex2)
 TUKEY3
 plot(TUKEY3)
+####################################################################
+######################### ANOVA WITHIN #############################
+####################################################################
+
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+
+library(datarium)
+data("selfesteem", package = "datarium") 
+?selfesteem
+
+dd=as.data.frame(selfesteem)
+attach(dd)
+head(dd)
+dim(dd)
+
+# use long format
+subj <- rep(1:nrow(dd), each=3)
+subj
+
+time <- rep(c("time1", "time2", "time3"), nrow(dd))
+time
+
+a=cbind(dd$t1,dd$t2,dd$t3)
+a
+
+y=as.vector(t(a))
+y
+
+data <- data.frame(factor(subj), factor(time), y)
+names(data) <- c("subj", "time", "y")
+data
+
+# plot the data
+g = ggplot(data, aes(x=time, y=y))
+g + geom_boxplot(aes(fill=time)) + ggtitle("Self-Esteem Score Data over time")
+
+# density
+ggplot(data) + geom_density(aes(x = y, fill = time), alpha = 0.8)
+
+# normality check
+shapiro.test(t1)
+shapiro.test(t2)
+shapiro.test(t3)
+
+# sfericity check
+bartlett.test(y,time)
+
+# sfericity check - alternative but requires notions of MANOVA
+mod <- lm(cbind(t1,t2,t3) ~ 1, data=dd)
+SSD(mod) #Functions to compute matrix of residual sums of squares and products,
+         # or the estimated variance matrix for multivariate linear models
+estVar(mod)
+mauchly.test(mod, X=~1)
+
+# perform ANOVA within
+# Error(id/time) is used to divide the error variance into 4 different clusters, 
+# which therefore takes into account of the repeated measures. 
+mod_rep <- aov(y ~ time + Error(subj/time), data)
+summary(mod_rep)
+
+# Tuckey post-hoc test
+require(MASS)         ## for oats data set
+require(nlme)         ## for lme()
+require(multcomp)     ## for multiple comparison stuff
+
+?lme
+Lme.mod <- lme(y ~ time, random = ~1 | subj/time, data)
+anova(Lme.mod)
+summary(Lme.mod)
+
+summary(glht(Lme.mod, linfct=mcp(time="Tukey")))
+
 
 
