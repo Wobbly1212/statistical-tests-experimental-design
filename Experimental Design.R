@@ -933,5 +933,75 @@ summary(Lme.mod)
 
 summary(glht(Lme.mod, linfct=mcp(time="Tukey")))
 
+####################################################################
+################## ANOVA WITHIN EXERCISE ###########################
+####################################################################
+
+# generate random vectors
+
+data=matrix(rnorm(250, mean=100, sd=40), 50, 5)
+data=round(data,2)
+
+sex=c(rep("M",25), rep("F",25))
+sex=as.factor(sex)
+
+id=c(1:50)
+
+data=cbind(id,data, sex)
+colnames(data)=c("id", paste("Time", c(1:5)), "sex")
+
+head(data)
+dim(data)
+
+data=as.data.frame(data)
+
+data$id=as.factor(data$id)
+data$sex=as.factor(data$sex)
+
+data
+
+# nice way to get the long format
+
+library(reshape)
+
+data_long = reshape(data, 
+            direction = "long",
+            varying = list(names(data)[2:6]),
+            v.names = "Value",
+            idvar = c("id", "sex"),
+            timevar = "Year",
+            times = 1:5)
+data_long
+
+# recent alternative
+
+library(reshape2)
+data_long2 <- melt(data, id.vars = c("id", "sex"))
+data_long2
+
+# plot the data using data_long
+
+head(data_long)
+g = ggplot(data_long, aes(x=as.factor(Year), y=Value))
+g + geom_boxplot(aes(fill=Year)) + ggtitle("Blood Pressure over time")
+
+# density
+ggplot(data_long) + geom_density(aes(x = Value, fill = as.factor(Year)), alpha = 0.5)
+
+# normality check
+shapiro.test(data_long$Value[data_long$Year==1])
+shapiro.test(data_long$Value[data_long$Year==2])
+shapiro.test(data_long$Value[data_long$Year==3])
+shapiro.test(data_long$Value[data_long$Year==4])
+shapiro.test(data_long$Value[data_long$Year==5])
+
+# sfericity check
+bartlett.test(data_long$Value,data_long$Year)
+
+# perform ANOVA within
+mod_rep <- aov(Value ~ Year + Error(id/Year), data_long)
+summary(mod_rep)
+
+
 
 
