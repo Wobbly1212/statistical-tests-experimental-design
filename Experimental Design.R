@@ -1003,5 +1003,81 @@ mod_rep <- aov(Value ~ Year + Error(id/Year), data_long)
 summary(mod_rep)
 
 
+###########################################################################
+############################### Bivariate Outliers ########################
+###########################################################################
+
+# not important here given that we have only one continuos outcome
+# that's just for student's knowledge
+
+library(aplpack)
+?bagplot
+
+bagplot(cbind(x,y),pch=16,cex=1)
+
+###########################################################################
+################ Mixed ANOVA with balanced designs ########################
+###########################################################################
+
+# In a sleep psychophysiology laboratory, the effects of a new psychotherapy (PT) 
+# and a pharmacological treatment (FT) for the treatment of insomnia are being tested. 
+# 10 sleepless people with problems in the falling asleep phase were selected: 
+# 5 are treated with PT and 5 with FT. The day before the start of treatment (time 0),
+# 30 days and finally 60 days, the number of hours slept by each individual is recorded.
+
+# The dependent variable is the number of hours slept (hours), 
+# while the predictors are time and treatment
+
+# we need the long format
+
+sleep <- read.csv2("sonno-long.csv")
+sleep
+
+colnames(sleep)=c("subject", "time", "treat","hours")
+attach(sleep)
+
+sleep$subject <- as.factor(sleep$subject)
+sleep$time <- as.factor(sleep$time)
+sleep$treat <- as.factor(sleep$treat)
+
+levels(sleep$treat)
+levels(sleep$time)
+
+?tapply
+with(sleep, tapply(hours, list(treat,time), mean))
+
+# recent alternative
+library(dplyr)
+?summarise
+sleep %>% group_by(time, treat) %>% summarise(mean=mean(hours))
+
+# in the formula you must specify how to divide the error variance using the Error option;
+# inside Error it will be necessary to specify that, for each level of the "time" factor,
+# the observations are always carried out on the same subjects.
+
+# aov works only with balanced designs
+mod_aov_rep = aov(hours ~ treat * time + Error(subject/time), data=sleep)
+summary(mod_aov_rep)
+
+# TukeyHSD Mixed ANOVA
+Lme.mod <- lme(hours ~ treat * time, random = ~1 | subject/time, sleep)
+anova(Lme.mod)  # same results as before
+summary(Lme.mod)
+# Tuckey test? .... you should do all the combinations manually and use the usal code for Tukey
+
+
+# Mauchly's Test of Sphericity 
+# the variances of differences between all combinations of related conditions 
+# (or group levels) are equal. 
+# we can use the function anova_test
+
+library(rstatix)
+res <- anova_test(data = sleep, dv = hours, wid = subject, within = time)
+res
+# The null hypothesis is that the variances of the group differences are equal. 
+# Thus, a significant p-value (p <= 0.05) indicates that the variances of 
+# group differences are not equal.
+
+
 
 
