@@ -1198,6 +1198,70 @@ anxiety %>%
     p.adjust.method = "bonferroni"
   )
 
+###########################################################################
+############ NON-parametric tests for many groups #########################
+###########################################################################
+
+###########################################################################
+###################### Kruskal-Wallis test ################################ 
+###########################################################################
+
+# http://www.sthda.com/english/wiki/kruskal-wallis-test-in-r
+
+# Non-parametric alternative to one-way ANOVA test
+
+# let's create some data for three groups
+
+?rnorm
+
+a=rnorm(100, mean = 0, sd = 1)
+b=runif(100, min=0, max=2)
+c=rbeta(100, 2, 2)
+d=sample(1:5, 100, replace=TRUE)
+
+a
+b
+c
+d
+
+data=cbind(a,b,c,d)
+data
+
+hist(a,prob=TRUE)
+lines(density(a), lty="dotted")
+shapiro.test(a)
+
+hist(b,prob=TRUE)
+lines(density(b), lty="dotted")
+shapiro.test(b)
+
+hist(c,prob=TRUE)
+lines(density(c), lty="dotted")
+shapiro.test(c)
+
+hist(d,prob=TRUE)
+lines(density(d), lty="dotted")
+shapiro.test(d)
+
+dd=c(a,b,c,d)
+
+group=c(rep("g1",100),rep("g2",100),rep("g3",100),rep("g4",100))
+
+group=as.factor(group)
+
+class(group)
+levels(group)
+
+dataset=as.data.frame(cbind(dd,as.factor(group)))
+dataset
+
+library(ggplot2)
+g = ggplot(dataset, aes(x=group, y=dd))
+g + geom_boxplot(aes(x=group, fill=group))
+
+?kruskal.test
+kruskal.test(dd ~ group, data = dataset)
+
 
 
 
