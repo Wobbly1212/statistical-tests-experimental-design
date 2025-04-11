@@ -1079,5 +1079,126 @@ res
 # group differences are not equal.
 
 
+###############################################################################
+############# Mixed ANOVA with tidyverse, for every design #################### 
+###############################################################################
+
+# example from: https://www.datanovia.com/en/lessons/mixed-anova-in-r/
+
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+
+# Wide format
+set.seed(123)
+data("anxiety", package = "datarium")
+
+anxiety
+tail(anxiety)
+?datarium::anxiety
+# The data provide the anxiety score, measured at three time points, 
+# of three groups of individuals practicing physical exercises at different 
+# levels (grp1: basal, grp2: moderate and grp3: high)
+
+?sample_n_by
+# just to check the treatments
+anxiety %>% sample_n_by(group, size = 3)
+
+# Gather the columns t1, t2 and t3 into long format.
+# Convert id and time into factor variables
+?tidyr::gather
+anxiety <- anxiety %>%
+  gather(key = "time", value = "score", t1, t2, t3) %>%
+  convert_as_factor(id, time)
+
+# Inspect some random rows of the data by groups
+set.seed(123)
+anxiety %>% sample_n_by(group, time, size = 2)
+
+# Summary statistics for each cell
+anxiety %>%
+  group_by(time, group) %>%
+  get_summary_stats(score, type = "mean_sd")
+
+bxp <- ggboxplot(
+  anxiety, x = "time", y = "score",
+  color = "group", palette = "jco"
+)
+bxp
+
+# check outliers
+anxiety %>%
+  group_by(time, group) %>%
+  identify_outliers(score)
+
+# check normality
+anxiety %>%
+  group_by(time, group) %>%
+  shapiro_test(score)
+
+# Homogeneity of variance of the between-subject factor (group)
+?levene_test
+anxiety %>%
+  group_by(time) %>%
+  levene_test(score ~ group)
+
+# Homogeneity of covariances of the between-subject factor (group) 
+?box_m
+box_m(anxiety[, "score", drop = FALSE], anxiety$group)
+
+
+# Two-way mixed ANOVA test
+res.aov <- anova_test(
+  data = anxiety, dv = score, wid = id,
+  between = group, within = time
+)
+
+get_anova_table(res.aov)
+?get_anova_table
+?anova_summary
+# measure of effect size that permits comparisons of results across 
+# both between-subjects and within-subjects designs
+
+# Effect of group at each time point
+one.way <- anxiety %>%
+  group_by(time) %>%
+  anova_test(dv = score, wid = id, between = group) %>%
+  get_anova_table() %>%
+  adjust_pvalue(method = "bonferroni")
+one.way
+
+# Pairwise comparisons between group levels
+pwc <- anxiety %>%
+  group_by(time) %>%
+  pairwise_t_test(score ~ group, p.adjust.method = "bonferroni")
+pwc
+
+# Effect of time at each level of exercises group
+one.way2 <- anxiety %>%
+  group_by(group) %>%
+  anova_test(dv = score, wid = id, within = time) %>%
+  get_anova_table() %>%
+  adjust_pvalue(method = "bonferroni")
+one.way2
+
+# Pairwise comparisons between time points at each group levels
+# Paired t-test is used because we have repeated measures by time
+pwc2 <- anxiety %>%
+  group_by(group) %>%
+  pairwise_t_test(
+    score ~ time, paired = TRUE, 
+    p.adjust.method = "bonferroni"
+  ) 
+pwc2
+
+# Procedure for non-significant two-way interaction
+anxiety %>%
+  pairwise_t_test(
+    score ~ time, paired = TRUE, 
+    p.adjust.method = "bonferroni"
+  )
+
+
+
 
 
