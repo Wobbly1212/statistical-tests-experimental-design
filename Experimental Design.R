@@ -1262,6 +1262,71 @@ g + geom_boxplot(aes(x=group, fill=group))
 ?kruskal.test
 kruskal.test(dd ~ group, data = dataset)
 
+# test post-hoc 
+# Adjust P-values for Multiple Comparisons
+# The "BH" of Benjamini, Hochberg, and Yekutieli control the false discovery rate, 
+# the expected proportion of false discoveries amongst the rejected hypotheses.
+# The false discovery rate is a less stringent condition than the family-wise error rate,
+# so these methods are more powerful than the others.
+# Benjamini, Y., and Yekutieli, D. (2001). The control of the false discovery rate
+# in multiple testing under dependency. Annals of Statistics 29, 1165-1188.
+
+?pairwise.wilcox.test
+pairwise.wilcox.test(dd, group, p.adjust.method = "BH", paired = FALSE)
+
+###########################################################################
+################################# Question ################################ 
+###########################################################################
+
+# Does a Non-parametric alternative to two-way ANOVA test exist?
+
+# Interesting discussion here: https://stats.stackexchange.com/questions/41934/non-parametric-alternative-for-2-way-anova
+
+
+###########################################################################
+###################### Friedman test  ####################################
+###########################################################################
+
+# from https://www.datanovia.com/en/lessons/friedman-test-in-r/
+
+# friedman.test is a Non-parametric alternative ANOVA for repeated measures
+?friedman.test 
+
+data("selfesteem", package = "datarium")
+head(selfesteem, 3)
+
+# another way to get the long format
+?gather
+
+selfesteem <- selfesteem %>%
+  gather(key = "time", value = "score", t1, t2, t3) %>%
+  convert_as_factor(id, time)
+
+head(selfesteem, 9)
+tail(selfesteem, 9)
+
+selfesteem %>%
+  group_by(time) %>%
+  get_summary_stats(score, type = "common")
+
+library(ggplot2)
+library(ggpubr)
+ggboxplot(selfesteem, x = "time", y = "score", add = "jitter")
+
+res.fried <- selfesteem %>% friedman_test(score ~ time |id)
+res.fried
+
+# Effect size
+# The Kendall's W can be used as the measure of the Friedman test effect size. 
+# It is calculated as follow : W = X2/N(K-1); where W is the Kendall's W value; X2
+# is the Friedman test statistic value; N is the sample size. k is the number 
+# of measurements per subject (M. T. Tomczak and Tomczak 2014).
+# The Kendall's W coefficient assumes the value from 0 (indicating no relationship)
+# to 1 (indicating a perfect relationship).
+# Kendall's W uses the Cohen's interpretation guidelines of 0.1 - < 0.3 (small effect),
+# 0.3 - < 0.5 (moderate effect) and >= 0.5 (large effect). 
+# Confidence intervals are calculated by bootstap.
+
 
 
 
