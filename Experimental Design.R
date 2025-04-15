@@ -97,10 +97,10 @@ mean(ToothGrowth$len) # the same
 sd(c(mean(s1$len), mean(s2$len), mean(s3$len)))
 sd(ToothGrowth$len) # not the same
 
-
 ###########################################################################
 ############################ parametric tests #############################
 ###########################################################################
+
 
 ########################################################################
 ### one-sample t-test ##################################################
@@ -339,7 +339,6 @@ rquery.t.test(x1, x2)
 ## Try to transform the data to make them normal and respect assumption 1 ###
 #############################################################################
 
-
 # use log to transform but pay attention to zeros
 # The natural log function is frequently used to rescale data for statistical
 # and graphical analysis. This can be accomplished in R via the use of the 
@@ -358,7 +357,6 @@ hist(log(v))
 shapiro.test(v)
 shapiro.test(log(v))
 
-
 # Box-Cox transformation
 
 library(caret)
@@ -375,7 +373,6 @@ hist(dist_new)
 shapiro.test(dist_new)
 
 # if you make the same transformation to both groups, now you can use t-test
-
 
 #############################################################################
 ############# Solution n.2 if normality is not present ######################
